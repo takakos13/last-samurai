@@ -1,0 +1,79 @@
+.scraping-section {
+    margin-top: 3rem;
+    padding: 2rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.search-form {
+    max-width: 600px;
+    margin: 0 auto 2rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+#searchResults {
+    margin-top: 2rem;
+}
+
+.table-responsive {
+    margin-top: 1rem;
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.btn-outline-primary {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.search-results {
+    margin-top: 2rem;
+}
+
+.event-details {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.event-details i {
+    width: 20px;
+    color: #007bff;
+    margin-right: 5px;
+}
+
+.capacity-info {
+    margin-top: 1rem;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.progress {
+    margin-top: 0.5rem;
+}
+
+.badge {
+    margin-right: 0.5rem;
+}
+
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card-footer {
+    background: transparent;
+    border-top: 1px solid rgba(0,0,0,0.1);
+} 

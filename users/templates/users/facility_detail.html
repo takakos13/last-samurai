@@ -1,0 +1,18 @@
+{% extends "users/base.html" %}
+{% load django_bootstrap5 %}
+
+{% block title %}施設詳細{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ facility.court_name }}</h1>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">施設情報</h5>
+            <p class="card-text">場所: {{ facility.location }}</p>
+            <a href="{% url 'users:facility_edit' facility.pk %}" class="btn btn-primary">編集</a>
+        </div>
+    </div>
+    <a href="{% url 'users:mypage' user.id %}" class="btn btn-secondary">戻る</a>
+</div>
+{% endblock %} 

@@ -1,0 +1,23 @@
+{% extends "users/base.html" %}
+{% load django_bootstrap5 %}
+
+{% block title %}イベント詳細{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ event.event_name }}</h1>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">イベント情報</h5>
+            <p class="card-text">主催者: {{ event.facility.court_name }}</p>
+            <p class="card-text">場所: {{ event.facility.location }}</p>
+            <p class="card-text">日付: {{ event.event_date|date:"Y/m/d" }}</p>
+            <p class="card-text">開始時間: {{ event.start_time|time:"H:i" }}</p>
+            <p class="card-text">レベル: {{ event.get_level_class_display }}</p>
+            <p class="card-text">カテゴリ: {{ event.get_category_display }}</p>
+            <p class="card-text">募集人数: {{ event.capacity }}名</p>
+        </div>
+    </div>
+    <a href="{% url 'users:index' %}" class="btn btn-secondary">戻る</a>
+</div>
+{% endblock %} 

@@ -1,0 +1,92 @@
+{% extends 'users/base.html' %}
+{% load django_bootstrap5 %}
+
+{% block title %}マイページ{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="user-header mb-4">
+            <h1>マイページ</h1>
+            {% if user %}
+                <div class="user-info">
+                    <p class="lead">ようこそ、{{ user.name }}さん</p>
+                    <p>メールアドレス: {{ user.email }}</p>
+                    {% if user.phone_number %}
+                        <p>電話番号: {{ user.phone_number }}</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="user-actions mb-4">
+            <a href="{% url 'users:user_edit' user.id %}" class="btn btn-primary">会員情報編集</a>
+        </div>
+
+        <div class="reservations">
+            <h2>予約一覧</h2>
+            <a href="{% url 'users:reservation_new' user.id %}" class="btn btn-success mb-3">新規予約</a>
+            {% if reservations %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>イベント名</th>
+                            <th>主催者</th>
+                            <th>予約日時</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reservation in reservations %}
+                            {% if reservation.event %}
+                                <tr>
+                                    <td>{{ reservation.event.event_name }}</td>
+                                    <td>{{ reservation.event.facility.court_name }}</td>
+                                    <td>{{ reservation.event.event_date|date:"Y/m/d" }} {{ reservation.event.start_time|time:"H:i" }}</td>
+                                    <td>
+                                        <a href="{% url 'users:event_detail' reservation.event.pk %}" class="btn btn-info btn-sm">詳細</a>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>予約はありません。</p>
+            {% endif %}
+        </div>
+        <div class="favorite-facilities mt-5">
+            <h2>お気に入り施設一覧</h2>
+            <a href="{% url 'users:favorite_facility_new' user.id %}" class="btn btn-success mb-3">新規登録</a>
+            {% if favorite_facilities %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>主催者</th>
+                            <th>場所</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for favorite in favorite_facilities %}
+                            <tr>
+                                <td>{{ favorite.facility.court_name }}</td>
+                                <td>{{ favorite.facility.location }}</td>
+                                <td>
+                                    <a href="{% url 'users:favorite_facility_edit' user.id favorite.pk %}" class="btn btn-primary btn-sm">編集</a>
+                                    <form method="post" action="{% url 'users:favorite_facility_delete' user.id favorite.pk %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('このお気に入りを削除しますか？')">削除</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>お気に入り施設はありません。</p>
+            {% endif %}
+        </div>
+        <div class="mt-4">
+            <a href="{% url 'users:index' %}" class="btn btn-secondary">トップ画面へ戻る</a>
+        </div>
+    </div>
+{% endblock %} 

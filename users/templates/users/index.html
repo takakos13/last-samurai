@@ -1,0 +1,181 @@
+{% extends "users/base.html" %}
+{% load django_bootstrap5 %}
+{% load static %}
+
+{% block title %}フットサルコート予約システム{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="text-center my-5">
+        <h1>フットサルコート予約システム</h1>
+        <div class="mt-4">
+            <a href="{% url 'users:user_register' %}" class="btn btn-primary btn-lg mx-2">新規メンバー登録</a>
+        </div>
+        
+        <div class="mt-5">
+            <h2>登録済みメンバー</h2>
+            {% if users %}
+                <div class="list-group mt-3">
+                    {% for user in users %}
+                        <a href="{% url 'users:mypage' user.id %}" class="list-group-item list-group-item-action">
+                            {{ user.name }} ({{ user.email }})
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>登録済みメンバーはいません。</p>
+            {% endif %}
+        </div>
+
+        <div class="mt-5">
+            <h2>メンバー一覧</h2>
+            {% if users %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>名前</th>
+                                <th>フリガナ</th>
+                                <th>メールアドレス</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                                <tr>
+                                    <td>{{ user.name }}</td>
+                                    <td>{{ user.furigana }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        <form method="post" action="{% url 'users:user_delete' user.pk %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('本当に削除しますか？')">削除</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>登録済みメンバーはいません。</p>
+            {% endif %}
+        </div>
+
+        <div class="mt-5">
+            <h2>施設一覧</h2>
+            <a href="{% url 'users:facility_new' %}" class="btn btn-success mb-3">新規施設登録</a>
+            {% if facilities %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>主催者</th>
+                                <th>場所</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for facility in facilities %}
+                                <tr>
+                                    <td>{{ facility.court_name }}</td>
+                                    <td>{{ facility.location }}</td>
+                                    <td>
+                                        <a href="{% url 'users:facility_edit' facility.pk %}" class="btn btn-primary btn-sm">編集</a>
+                                        <form method="post" action="{% url 'users:facility_delete' facility.pk %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('この施設を削除しますか？')">削除</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>登録済み施設はありません。</p>
+            {% endif %}
+        </div>
+
+        <div class="mt-5">
+            <h2>イベント一覧</h2>
+            <a href="{% url 'users:event_new' %}" class="btn btn-success mb-3">新規イベント登録</a>
+            {% if events %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>イベント名</th>
+                                <th>主催者</th>
+                                <th>場所</th>
+                                <th>日付</th>
+                                <th>開始時間</th>
+                                <th>レベル</th>
+                                <th>カテゴリ</th>
+                                <th>募集人数</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in events %}
+                                <tr>
+                                    <td>{{ event.event_name }}</td>
+                                    <td>{{ event.facility.court_name }}</td>
+                                    <td>{{ event.facility.location }}</td>
+                                    <td>{{ event.event_date|date:"Y/m/d" }}</td>
+                                    <td>{{ event.start_time|time:"H:i" }}</td>
+                                    <td>{{ event.get_level_class_display }}</td>
+                                    <td>{{ event.get_category_display }}</td>
+                                    <td>{{ event.capacity }}名</td>
+                                    <td>
+                                        <a href="{% url 'users:event_edit' event.pk %}" class="btn btn-primary btn-sm">編集</a>
+                                        <form method="post" action="{% url 'users:event_delete' event.pk %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('このイベントを削除しますか？')">削除</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>登録済みイベントはありません。</p>
+            {% endif %}
+        </div>
+
+        <section class="scraping-section">
+            <h2>個サル情報を検索</h2>
+            <form id="scrapeForm" class="search-form" method="POST" action="{% url 'users:scrape_events' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="date">日付</label>
+                    <input type="date" id="date" name="date" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="location">場所</label>
+                    <input type="text" id="location" name="location" class="form-control" placeholder="例：渋谷" required>
+                </div>
+                <div class="form-group">
+                    <label for="start_time">開始時間</label>
+                    <input type="time" id="start_time" name="start_time" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">検索</button>
+            </form>
+            
+            <!-- 検索結果表示エリア -->
+            <div id="searchResults" class="mt-4">
+                <div id="loadingMessage" style="display: none;">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">検索中...</span>
+                        </div>
+                        <p>検索中です。しばらくお待ちください...</p>
+                    </div>
+                </div>
+                <div id="resultsContent"></div>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %} 

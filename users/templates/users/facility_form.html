@@ -1,0 +1,16 @@
+{% extends "users/base.html" %}
+{% load django_bootstrap5 %}
+
+{% block title %}{% if form.instance.pk %}施設情報編集{% else %}新規施設登録{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>{% if form.instance.pk %}施設情報編集{% else %}新規施設登録{% endif %}</h1>
+    <form method="post">
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        {% bootstrap_button button_type="submit" content="保存" %}
+        <a href="{% url 'users:index' %}" class="btn btn-secondary">戻る</a>
+    </form>
+</div>
+{% endblock %} 

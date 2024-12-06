@@ -1,0 +1,40 @@
+{% extends "users/base.html" %}
+{% load django_bootstrap5 %}
+
+{% block title %}予約{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>{% if form.instance.pk %}予約編集{% else %}新規予約{% endif %}</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_event" class="form-label">イベント</label>
+            <select name="event" id="id_event" class="form-select" required>
+                {% for event in events %}
+                    <option value="{{ event.id }}" {% if form.instance.event.id == event.id %}selected{% endif %}>
+                        {{ event.event_name }} - {{ event.facility.court_name }} 
+                        ({{ event.event_date|date:"Y/m/d" }} {{ event.start_time|time:"H:i" }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        {% bootstrap_button button_type="submit" content="保存" %}
+        <a href="{% url 'users:mypage' user_id %}" class="btn btn-secondary">戻る</a>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('.datepicker').datepicker({
+            format: 'yyyy-mm-dd',
+            language: 'ja',
+            autoclose: true,
+            todayHighlight: true,
+            startDate: new Date()
+        });
+    });
+</script>
+{% endblock %} 
