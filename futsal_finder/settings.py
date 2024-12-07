@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users.apps.UserConfig',
     'django_bootstrap5', 
+    'django_crontab',
     #'futsal_events.apps.FutsalsConfig',  # Futsalアプリケーションの設定 @@
 ]
 
@@ -125,3 +126,8 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Cronジョブの設定
+CRONJOBS = [
+    ('0 0 * * *', 'django.core.management.call_command', ['delete_past_events']),
+]

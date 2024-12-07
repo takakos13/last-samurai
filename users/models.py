@@ -50,23 +50,19 @@ class Event(models.Model):
         ordering = ['event_date', 'start_time']
 
     def delete(self, *args, **kwargs):
-        # 関連するScrapedEventを検索して削除
+        if hasattr(self, '_deleting_related'):
+            return super().delete(*args, **kwargs)
+        
         try:
-            scraped_events = ScrapedEvent.objects.filter(
-                event_name=self.event_name,
-                event_date=self.event_date,
-                start_time=self.start_time,
-                location=self.facility.location,
-                organizer=self.facility.court_name
-            )
-            for scraped_event in scraped_events:
-                scraped_event.event = None  # 関連を解除
-                scraped_event.save()
-                scraped_event.delete()
-        except Exception as e:
-            print(f"Error deleting ScrapedEvent: {e}")
-
-        super().delete(*args, **kwargs)
+            self._deleting_related = True
+            if hasattr(self, 'scraped_source') and self.scraped_source:
+                self.scraped_source.delete()
+        except Exception:
+            pass
+        finally:
+            delattr(self, '_deleting_related')
+        
+        return super().delete(*args, **kwargs)
 
     def __str__(self):
         return f"{self.event_name} - {self.facility.court_name}"
@@ -121,15 +117,12 @@ class ScrapedEvent(models.Model):
         unique_together = ['event_name', 'event_date', 'start_time', 'location']
 
     def delete(self, *args, **kwargs):
-        print(f"Starting deletion of ScrapedEvent: {self.event_name} on {self.event_date}")
-        
         try:
             # まず施設を検索
             facility = Facility.objects.get(
                 court_name=self.organizer,
                 location=self.location
             )
-            print(f"Found facility: {facility.court_name}")
 
             # 施設に紐づくイベントを検索
             event = Event.objects.get(
@@ -138,24 +131,18 @@ class ScrapedEvent(models.Model):
                 event_date=self.event_date,
                 start_time=self.start_time
             )
-            print(f"Found matching event: {event.event_name}")
 
             # イベントを削除
-            event_id = event.id
             event.delete()
-            print(f"Deleted event with ID: {event_id}")
 
         except Facility.DoesNotExist:
-            print(f"No facility found for: {self.organizer} at {self.location}")
+            pass
         except Event.DoesNotExist:
-            print(f"No matching event found")
+            pass
         except Exception as e:
-            print(f"Unexpected error during event deletion: {e}")
+            pass
         
-        print("Proceeding with ScrapedEvent deletion")
-        result = super().delete(*args, **kwargs)
-        print("ScrapedEvent deletion completed")
-        return result
+        return super().delete(*args, **kwargs)
 
     def convert_to_facility_and_event(self):
         """スクレイピングしたイベントを施設とイベントモデルに変換して保存する"""
@@ -201,40 +188,51 @@ class ScrapedEvent(models.Model):
             print(f"Error in convert_to_facility_and_event: {e}")
             raise
 
-# シグナルハン�ラーの定義
+# シグナルハンドラーの定義
 @receiver(pre_delete, sender=ScrapedEvent)
 def delete_related_event(sender, instance, **kwargs):
     """ScrapedEventが削除される前に関連するEventを削除"""
+    if hasattr(instance, '_deleting_related'):
+        return
+    
     try:
-        # 関連するEventを検索
-        facility = Facility.objects.get(
+        instance._deleting_related = True
+        # 施設を検索
+        facility = Facility.objects.filter(
             court_name=instance.organizer,
             location=instance.location
-        )
-        events = Event.objects.filter(
-            facility=facility,
-            event_name=instance.event_name,
-            event_date=instance.event_date,
-            start_time=instance.start_time
-        )
-        # 見つかったEventを削除
-        events.delete()
-    except Exception as e:
-        print(f"Error in delete_related_event signal: {e}")
+        ).first()
+        
+        if facility:
+            # イベントを検索して削除
+            Event.objects.filter(
+                facility=facility,
+                event_name=instance.event_name,
+                event_date=instance.event_date,
+                start_time=instance.start_time
+            ).delete()
+    except Exception:
+        pass
+    finally:
+        delattr(instance, '_deleting_related')
 
 @receiver(pre_delete, sender=Event)
 def delete_related_scraped_event(sender, instance, **kwargs):
     """Eventが削除される前に関連するScrapedEventを削除"""
+    if hasattr(instance, '_deleting_related'):
+        return
+    
     try:
-        # 関連するScrapedEventを検索
-        scraped_events = ScrapedEvent.objects.filter(
+        instance._deleting_related = True
+        # ScrapedEventを検索して削除
+        ScrapedEvent.objects.filter(
             event_name=instance.event_name,
             event_date=instance.event_date,
             start_time=instance.start_time,
             location=instance.facility.location,
             organizer=instance.facility.court_name
-        )
-        # 見つかったScrapedEventを削除
-        scraped_events.delete()
-    except Exception as e:
-        print(f"Error in delete_related_scraped_event signal: {e}")
+        ).delete()
+    except Exception:
+        pass
+    finally:
+        delattr(instance, '_deleting_related')
