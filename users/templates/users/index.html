@@ -97,6 +97,43 @@
             {% endif %}
         </div>
 
+        <!-- 施設一覧のページネ�ョン -->
+        <div class="facility-list">
+            <table class="table">
+                <!-- ... 施設テーブルの内容 ... -->
+            </table>
+            
+            {% if facilities.paginator.num_pages > 1 %}
+            <nav aria-label="施設一覧のページネーション">
+                <ul class="pagination justify-content-center">
+                    {% if facilities.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?facility_page=1&event_page={{ events.number }}">&laquo; 最初</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?facility_page={{ facilities.previous_page_number }}&event_page={{ events.number }}">前へ</a>
+                        </li>
+                    {% endif %}
+                    
+                    <li class="page-item disabled">
+                        <span class="page-link">
+                            {{ facilities.number }} / {{ facilities.paginator.num_pages }}
+                        </span>
+                    </li>
+                    
+                    {% if facilities.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?facility_page={{ facilities.next_page_number }}&event_page={{ events.number }}">次へ</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?facility_page={{ facilities.paginator.num_pages }}&event_page={{ events.number }}">最後 &raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+
         <div class="mt-5">
             <h2>イベント一覧</h2>
             <a href="{% url 'users:event_new' %}" class="btn btn-success mb-3">新規イベント登録</a>
@@ -141,6 +178,43 @@
                 </div>
             {% else %}
                 <p>登録済みイベントはありません。</p>
+            {% endif %}
+        </div>
+
+        <!-- イベント一覧のページ�ーション -->
+        <div class="event-list">
+            <table class="table">
+                <!-- ... イベントテーブルの内容 ... -->
+            </table>
+            
+            {% if events.paginator.num_pages > 1 %}
+            <nav aria-label="イベント一覧のページネーション">
+                <ul class="pagination justify-content-center">
+                    {% if events.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?facility_page={{ facilities.number }}&event_page=1">&laquo; 最初</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?facility_page={{ facilities.number }}&event_page={{ events.previous_page_number }}">前へ</a>
+                        </li>
+                    {% endif %}
+                    
+                    <li class="page-item disabled">
+                        <span class="page-link">
+                            {{ events.number }} / {{ events.paginator.num_pages }}
+                        </span>
+                    </li>
+                    
+                    {% if events.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?facility_page={{ facilities.number }}&event_page={{ events.next_page_number }}">次へ</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?facility_page={{ facilities.number }}&event_page={{ events.paginator.num_pages }}">最後 &raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
             {% endif %}
         </div>
 

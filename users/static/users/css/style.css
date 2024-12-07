@@ -76,4 +76,33 @@
 .card-footer {
     background: transparent;
     border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+/* ページネーションのスタイル */
+.pagination {
+    margin: 20px 0;
+}
+
+.page-link {
+    color: #007bff;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+}
+
+.page-link:hover {
+    color: #0056b3;
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+}
+
+.page-item.disabled .page-link {
+    color: #6c757d;
+    background-color: #fff;
+    border-color: #dee2e6;
+}
+
+.page-item.active .page-link {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
 } 

@@ -162,10 +162,19 @@ class LaBolaScraper:
             print(f"場所マッチ: {location_match}")
             matches &= location_match
         
-        if target_time:
-            time_match = target_time in event_time if event_time else False
-            print(f"時間マッチ: {time_match}")
-            matches &= time_match
+        if target_time and event_time:
+            try:
+                # 時間を比較可能な形式に変換
+                target_time_obj = datetime.strptime(target_time, '%H:%M').time()
+                event_time_obj = datetime.strptime(event_time, '%H:%M').time()
+                
+                # イベントの開始時間が指定時間以前であればマッチ
+                time_match = event_time_obj <= target_time_obj
+                print(f"時間マッチ: {time_match} (イベント時間: {event_time_obj} <= 指定時間: {target_time_obj})")
+                matches &= time_match
+            except ValueError as e:
+                print(f"時間変換エラー: {e}")
+                return False
         
         print(f"最終マッチング結果: {matches}")
         return matches

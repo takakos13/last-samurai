@@ -12,18 +12,46 @@ from django.contrib import messages
 from .utils.scraper import LaBolaScraper
 import logging
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 logger = logging.getLogger(__name__)
 
 def index(request):
+    # ユーザー情報の取得
     users = User.objects.all().order_by('created_at')
-    facilities = Facility.objects.all()
+    
+    # 施設とイベントの取得
+    facilities = Facility.objects.all().order_by('court_name')
     events = Event.objects.all().order_by('event_date', 'start_time')
-    return render(request, 'users/index.html', {
+    
+    # ページネーションの設定（施設は20件、イベントは10件）
+    facility_paginator = Paginator(facilities, 20)
+    event_paginator = Paginator(events, 10)
+    
+    # GETパラメータからページ番号を取得
+    facility_page = request.GET.get('facility_page')
+    event_page = request.GET.get('event_page')
+    
+    try:
+        facility_items = facility_paginator.page(facility_page)
+    except PageNotAnInteger:
+        facility_items = facility_paginator.page(1)
+    except EmptyPage:
+        facility_items = facility_paginator.page(facility_paginator.num_pages)
+        
+    try:
+        event_items = event_paginator.page(event_page)
+    except PageNotAnInteger:
+        event_items = event_paginator.page(1)
+    except EmptyPage:
+        event_items = event_paginator.page(event_paginator.num_pages)
+    
+    context = {
         'users': users,
-        'facilities': facilities,
-        'events': events,
-    })
+        'facilities': facility_items,
+        'events': event_items,
+    }
+    return render(request, 'users/index.html', context)
 
 class ReservationListView(ListView):
     model = Reservation
@@ -210,7 +238,7 @@ class EventDeleteView(DeleteView):
     success_url = reverse_lazy('users:index')
     
     def delete(self, request, *args, **kwargs):
-        messages.success(request, '���ベントを削除しました。')
+        messages.success(request, 'イベントを削除しました。')
         return super().delete(request, *args, **kwargs)
 
 class FavoriteFacilityDeleteView(DeleteView):

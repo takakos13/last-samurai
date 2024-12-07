@@ -130,4 +130,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Cronジョブの設定
 CRONJOBS = [
     ('0 0 * * *', 'django.core.management.call_command', ['delete_past_events']),
+    ('0 0 * * *', 'django.core.management.call_command', ['auto_scrape']),
 ]
