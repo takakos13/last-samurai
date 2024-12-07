@@ -87,6 +87,7 @@ class ScrapedEventAdmin(admin.ModelAdmin):
     search_fields = ('event_name', 'location', 'organizer')
     date_hierarchy = 'event_date'
     ordering = ('event_date', 'start_time')
+    readonly_fields = ('created_at',)
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Reservation, ReservationAdmin)

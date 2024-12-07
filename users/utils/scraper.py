@@ -16,7 +16,7 @@ class LaBolaScraper:
         }
         print("LaBolaScraper initialized")
 
-    def search_events(self, date=None, location=None, start_time=None, max_pages=10): #最大ページ
+    def search_events(self, date=None, location=None, start_time=None, max_pages=3): #最大ページ
         print(f"\n検索開始: 日付={date}, 場所={location}, 開始時間={start_time}")
         events = []
         
@@ -64,32 +64,47 @@ class LaBolaScraper:
                                 event_url_tag = item.find('a', href=True)
                                 full_event_url = f"https://labola.jp{event_url_tag['href']}" if event_url_tag else "不明"
                                 
-                                # クラスとカテゴリーの取得
-                                class_info = item.find('div', class_='class-info')
-                                event_class = class_info.text.strip() if class_info else "不明"
+                                # 対象クラスの取得（詳細な情報を出力）
+                                target_class = item.find('th', string=lambda x: x and '対象クラス' in x)
+                                print(f"対象クラス要素: {target_class}")
+                                if target_class:
+                                    class_td = target_class.find_next_sibling('td')
+                                    print(f"対象クラスの内容: {class_td.text if class_td else 'None'}")
+                                    event_category = class_td.text.strip() if class_td else "不明"
+                                else:
+                                    event_category = "不明"
                                 
-                                category_info = item.find('div', class_='category')
-                                event_category = category_info.text.strip() if category_info else "不明"
-                                
-                                # 募集人数の取得
-                                capacity_info = item.find('th', string='募集数')
-                                total = participants = spots_left = "不明"
+                                # 募集数の取得（詳細な情報を出力）
+                                capacity_info = item.find('th', string=lambda x: x and '募集数' in x)
+                                print(f"募集数要素: {capacity_info}")
+                                total = participants = spots_left = "0"
                                 
                                 if capacity_info:
                                     capacity_td = capacity_info.find_next_sibling('td')
+                                    print(f"募集数TD内容: {capacity_td.text if capacity_td else 'None'}")
+                                    
                                     if capacity_td:
-                                        total_capacity = capacity_td.find('strong', class_='count')
-                                        total = total_capacity.text.strip().split()[0] if total_capacity else "不明"
+                                        # 総募集数
+                                        total_capacity = capacity_td.find('strong')
+                                        print(f"総募集数要素: {total_capacity}")
+                                        total = total_capacity.text.strip() if total_capacity else "0"
                                         
-                                        participants_span = capacity_td.find('span', class_='green')
-                                        if participants_span:
-                                            participants_sum = participants_span.find('span', class_='sum')
-                                            participants = participants_sum.text.strip() if participants_sum else "不明"
+                                        # 参加者数（緑色の数字）
+                                        participants_div = capacity_td.find('span', style=lambda x: x and 'color: green' in x)
+                                        print(f"参加者数要素: {participants_div}")
+                                        participants = participants_div.text.strip() if participants_div else "0"
                                         
-                                        remaining_span = capacity_td.find('span', class_='orange')
-                                        if remaining_span:
-                                            remaining_sum = remaining_span.find('span', class_='sum')
-                                            spots_left = remaining_sum.text.strip() if remaining_sum else "不明"
+                                        # 残り枠数（オレンジ色の数字）
+                                        remaining_div = capacity_td.find('span', style=lambda x: x and 'color: orange' in x)
+                                        print(f"残り枠数要素: {remaining_div}")
+                                        spots_left = remaining_div.text.strip() if remaining_div else "0"
+                                
+                                # デバッグ情報の出力
+                                print(f"取得したデータ:")
+                                print(f"カテゴリー: {event_category}")
+                                print(f"総募集数: {total}")
+                                print(f"参加者数: {participants}")
+                                print(f"残り枠数: {spots_left}")
                                 
                                 # 条件マッチング
                                 if self._match_criteria(event_date, event_location, event_time, date, location, start_time):
@@ -101,7 +116,7 @@ class LaBolaScraper:
                                         'organizer': event_organizer,
                                         'name': event_name,
                                         'url': full_event_url,
-                                        'class': event_class,
+                                        'class': event_category,
                                         'category': event_category,
                                         'capacity': {
                                             'total': total,
@@ -111,7 +126,7 @@ class LaBolaScraper:
                                     })
                     
                     except Exception as e:
-                        print(f"イベント解析エラー: {str(e)}")
+                        print(f"データ取得エラー: {str(e)}")
                         continue
                 
                 time.sleep(1)
