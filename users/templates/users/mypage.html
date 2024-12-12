@@ -43,6 +43,10 @@
                                     <td>{{ reservation.event.event_date|date:"Y/m/d" }} {{ reservation.event.start_time|time:"H:i" }}</td>
                                     <td>
                                         <a href="{% url 'users:event_detail' reservation.event.pk %}" class="btn btn-info btn-sm">詳細</a>
+                                        <form method="post" action="{% url 'users:reservation_delete' user.id reservation.pk %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('この予約を削除しますか？')">削除</button>
+                                        </form>
                                     </td>
                                 </tr>
                             {% endif %}

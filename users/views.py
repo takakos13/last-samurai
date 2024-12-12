@@ -246,7 +246,13 @@ class FacilityDeleteView(DeleteView):
 
 class EventDeleteView(DeleteView):
     model = Event
-    success_url = reverse_lazy('users:index')
+    
+    def get_success_url(self):
+        # イベントに紐づく予約から、予約したユーザーを取得
+        reservation = Reservation.objects.filter(event=self.object).first()
+        if reservation:
+            return reverse_lazy('users:mypage', kwargs={'user_id': reservation.user.id})
+        return reverse_lazy('users:index')
     
     def delete(self, request, *args, **kwargs):
         messages.success(request, 'イベントを削除しました。')
@@ -261,6 +267,12 @@ class FavoriteFacilityDeleteView(DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(request, 'お気に入り施設を削除しました。')
         return super().delete(request, *args, **kwargs)
+
+class ReservationDeleteView(DeleteView):
+    model = Reservation
+    
+    def get_success_url(self):
+        return reverse_lazy('users:mypage', kwargs={'user_id': self.kwargs['user_id']})
 
 @ensure_csrf_cookie
 def scrape_events(request):
