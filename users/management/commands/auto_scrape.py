@@ -26,7 +26,7 @@ class Command(BaseCommand):
             scraping_conditions = {
                 'location': '東京',
                 'date': target_date,
-                'start_time': '08:00'
+                'start_time': '12:00'
             }
             
             self.stdout.write(

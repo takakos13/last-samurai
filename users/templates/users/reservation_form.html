@@ -12,16 +12,51 @@
             <label for="id_event" class="form-label">イベント</label>
             <select name="event" id="id_event" class="form-select" required>
                 {% for event in events %}
-                    <option value="{{ event.id }}" {% if form.instance.event.id == event.id %}selected{% endif %}>
+                    <option value="{{ event.id }}">
                         {{ event.event_name }} - {{ event.facility.court_name }} 
                         ({{ event.event_date|date:"Y/m/d" }} {{ event.start_time|time:"H:i" }})
                     </option>
                 {% endfor %}
             </select>
         </div>
+        {% if form.event.errors %}
+            <div class="alert alert-danger">
+                {{ form.event.errors }}
+            </div>
+        {% endif %}
         {% bootstrap_button button_type="submit" content="保存" %}
         <a href="{% url 'users:mypage' user_id %}" class="btn btn-secondary">戻る</a>
     </form>
+
+    <div class="mt-4">
+        <h2>イベント一覧</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>イベント名</th>
+                    <th>施設</th>
+                    <th>日時</th>
+                    <th>状態</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event_info in events_with_status %}
+                    <tr>
+                        <td>{{ event_info.event.event_name }}</td>
+                        <td>{{ event_info.event.facility.court_name }}</td>
+                        <td>{{ event_info.event.event_date|date:"Y/m/d" }} {{ event_info.event.start_time|time:"H:i" }}</td>
+                        <td>
+                            {% if event_info.is_reserved %}
+                                <span class="badge bg-warning">予約済み</span>
+                            {% else %}
+                                <span class="badge bg-success">予約可能</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}
 

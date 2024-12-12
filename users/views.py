@@ -13,6 +13,9 @@ from .utils.scraper import LaBolaScraper
 import logging
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponseRedirect
+from django.contrib.auth import get_user_model
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +27,7 @@ def index(request):
     facilities = Facility.objects.all().order_by('court_name')
     events = Event.objects.all().order_by('event_date', 'start_time')
     
-    # ページネーションの設定（施設は20件、イベントは10件）
+    # ページネーションの設定（施設は20件、イベントは10件��
     facility_paginator = Paginator(facilities, 20)
     event_paginator = Paginator(events, 10)
     
@@ -75,11 +78,42 @@ class ReservationCreateView(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['user_id'] = self.kwargs['user_id']
-        context['events'] = Event.objects.all().order_by('event_date', 'start_time')
+        
+        # 既に予約されているイベントのIDリストを取得
+        reserved_event_ids = Reservation.objects.filter(
+            user_id=self.kwargs['user_id']
+        ).values_list('event_id', flat=True)
+        
+        # 全てのイベントを取得（予約済みのものも含む）
+        all_events = Event.objects.all().order_by('event_date', 'start_time')
+        
+        # 各イベントに予約済みかどうかの情報を追加
+        events_with_status = []
+        for event in all_events:
+            events_with_status.append({
+                'event': event,
+                'is_reserved': event.id in reserved_event_ids
+            })
+        
+        context['events'] = all_events  # フォーム用の全イベント
+        context['events_with_status'] = events_with_status  # 表示用のイベント（予約状態付き）
         return context
     
     def form_valid(self, form):
-        form.instance.user = get_object_or_404(User, pk=self.kwargs['user_id'])
+        user = get_object_or_404(User, pk=self.kwargs['user_id'])
+        form.instance.user = user
+        
+        # 重複チェック
+        existing_reservation = Reservation.objects.filter(
+            user=user,
+            event=form.cleaned_data['event']
+        ).exists()
+        
+        if existing_reservation:
+            form.add_error('event', '既にこのイベントは予約されています')
+            return self.form_invalid(form)
+            
+        messages.success(self.request, 'イベントを予約しました。')
         return super().form_valid(form)
     
     def get_success_url(self):
@@ -171,10 +205,8 @@ class EventDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # イベントに紐づく予約から、予約したユーザーを取得
-        reservation = Reservation.objects.filter(event=self.object).first()
-        if reservation:
-            context['user'] = reservation.user
+        # イベントに紐づく予約を取得
+        context['reservation'] = Reservation.objects.filter(event=self.object).first()
         return context
 
 class FavoriteFacilityCreateView(CreateView):
@@ -244,19 +276,52 @@ class FacilityDeleteView(DeleteView):
         messages.success(request, '施設を削除しました。')
         return super().delete(request, *args, **kwargs)
 
-class EventDeleteView(DeleteView):
+class EventDeleteView(LoginRequiredMixin, DeleteView):
     model = Event
     
     def get_success_url(self):
-        # イベントに紐づく予約から、予約したユーザーを取得
-        reservation = Reservation.objects.filter(event=self.object).first()
-        if reservation:
-            return reverse_lazy('users:mypage', kwargs={'user_id': reservation.user.id})
-        return reverse_lazy('users:index')
+        try:
+            # イベントに関連する予約を取得
+            reservation = Reservation.objects.filter(
+                event=self.object
+            ).first()
+            
+            if reservation:
+                # 予約が存在する場合、その予約のユーザーのマイページへ
+                return reverse_lazy('users:mypage', kwargs={'user_id': reservation.user.id})
+            
+            # 予約が存在しない場合はインデックスページへ
+            return reverse_lazy('users:index')
+            
+        except Exception as e:
+            print(f"Error: {e}")
+            return reverse_lazy('users:index')
     
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, 'イベントを削除しました。')
-        return super().delete(request, *args, **kwargs)
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        success_url = self.get_success_url()
+        
+        try:
+            # イベントに関連する予約を取得
+            reservation = Reservation.objects.filter(
+                event=self.object
+            ).first()
+            
+            if reservation:
+                user_id = reservation.user.id  # ユーザーIDを保存
+                reservation.delete()
+                messages.success(request, '予約を削除しました。')
+                # 予約したユーザーのマイページへリダイレクト
+                return HttpResponseRedirect(reverse_lazy('users:mypage', kwargs={'user_id': user_id}))
+            
+            # 予約が見つからない場合
+            messages.warning(request, '予約が見つかりませんでした。')
+            return HttpResponseRedirect(reverse_lazy('users:index'))
+            
+        except Exception as e:
+            print(f"Error deleting reservation: {e}")
+            messages.error(request, '予約の削除中にエラーが発生しました。')
+            return HttpResponseRedirect(reverse_lazy('users:index'))
 
 class FavoriteFacilityDeleteView(DeleteView):
     model = FavoriteFacility
@@ -291,7 +356,7 @@ def scrape_events(request):
                     date_obj = datetime.strptime(event['date'], '%Y/%m/%d').date()
                     time_obj = datetime.strptime(event['time'], '%H:%M').time()
 
-                    # ScrapedEventの作成
+                    # ScrapedEventの���成
                     scraped_event = ScrapedEvent.objects.create(
                         event_name=event['name'],
                         event_date=date_obj,
