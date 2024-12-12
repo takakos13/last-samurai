@@ -113,13 +113,16 @@ class UserRegisterView(CreateView):
 
 def mypage(request, user_id):
     user = get_object_or_404(User, pk=user_id)
-    reservations = Reservation.objects.filter(user=user).order_by('event__event_date', 'event__start_time')
-    favorite_facilities = FavoriteFacility.objects.filter(user=user).order_by('created_at')
-    return render(request, 'users/mypage.html', {
+    favorite_facilities = FavoriteFacility.objects.filter(user=user).select_related('facility')
+    # 予約情報を取得
+    reservations = Reservation.objects.filter(user=user).select_related('event')
+    
+    context = {
         'user': user,
-        'reservations': reservations,
-        'favorite_facilities': favorite_facilities
-    })
+        'favorite_facilities': favorite_facilities,
+        'reservations': reservations,  # コンテキストに予約情報を追加
+    }
+    return render(request, 'users/mypage.html', context)
 
 class UserUpdateView(UpdateView):
     model = User
