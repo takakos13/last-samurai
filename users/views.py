@@ -169,6 +169,14 @@ class EventDetailView(DetailView):
     template_name = 'users/event_detail.html'
     context_object_name = 'event'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # イベントに紐づく予約から、予約したユーザーを取得
+        reservation = Reservation.objects.filter(event=self.object).first()
+        if reservation:
+            context['user'] = reservation.user
+        return context
+
 class FavoriteFacilityCreateView(CreateView):
     model = FavoriteFacility
     template_name = 'users/favorite_facility_form.html'

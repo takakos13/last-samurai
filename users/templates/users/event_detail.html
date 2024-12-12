@@ -18,6 +18,10 @@
             <p class="card-text">募集人数: {{ event.capacity }}名</p>
         </div>
     </div>
-    <a href="{% url 'users:index' %}" class="btn btn-secondary">戻る</a>
+    {% if user %}
+        <a href="{% url 'users:mypage' user.id %}" class="btn btn-secondary">戻る</a>
+    {% else %}
+        <a href="{% url 'users:index' %}" class="btn btn-secondary">戻る</a>
+    {% endif %}
 </div>
 {% endblock %} 
