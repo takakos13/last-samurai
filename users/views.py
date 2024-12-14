@@ -278,50 +278,26 @@ class FacilityDeleteView(DeleteView):
 
 class EventDeleteView(LoginRequiredMixin, DeleteView):
     model = Event
-    
-    def get_success_url(self):
-        try:
-            # イベントに関連する予約を取得
-            reservation = Reservation.objects.filter(
-                event=self.object
-            ).first()
-            
-            if reservation:
-                # 予約が存在する場合、その予約のユーザーのマイページへ
-                return reverse_lazy('users:mypage', kwargs={'user_id': reservation.user.id})
-            
-            # 予約が存在しない場合はインデックスページへ
-            return reverse_lazy('users:index')
-            
-        except Exception as e:
-            print(f"Error: {e}")
-            return reverse_lazy('users:index')
+    success_url = reverse_lazy('users:index')
     
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
-        success_url = self.get_success_url()
+        
+        # イベントに関連する予約があるかチェック
+        has_reservations = Reservation.objects.filter(event=self.object).exists()
+        
+        if has_reservations:
+            messages.error(request, '予約済みのイベントは削除できません。')
+            return HttpResponseRedirect(self.success_url)
         
         try:
-            # イベントに関連する予約を取得
-            reservation = Reservation.objects.filter(
-                event=self.object
-            ).first()
-            
-            if reservation:
-                user_id = reservation.user.id  # ユーザーIDを保存
-                reservation.delete()
-                messages.success(request, '予約を削除しました。')
-                # 予約したユーザーのマイページへリダイレクト
-                return HttpResponseRedirect(reverse_lazy('users:mypage', kwargs={'user_id': user_id}))
-            
-            # 予約が見つからない場合
-            messages.warning(request, '予約が見つかりませんでした。')
-            return HttpResponseRedirect(reverse_lazy('users:index'))
-            
+            self.object.delete()
+            messages.success(request, 'イベントを削除しました。')
         except Exception as e:
-            print(f"Error deleting reservation: {e}")
-            messages.error(request, '予約の削除中にエラーが発生しました。')
-            return HttpResponseRedirect(reverse_lazy('users:index'))
+            print(f"Error deleting event: {e}")
+            messages.error(request, 'イベントの削除中にエラーが発生しました。')
+            
+        return HttpResponseRedirect(self.success_url)
 
 class FavoriteFacilityDeleteView(DeleteView):
     model = FavoriteFacility
