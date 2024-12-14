@@ -36,12 +36,12 @@ class Facility(models.Model):
 #イベントモデル
 class Event(models.Model):
     facility = models.ForeignKey(Facility, on_delete=models.CASCADE, related_name='events')
-    event_name = models.CharField(max_length=200)
-    event_date = models.DateField()
-    start_time = models.TimeField()
-    level_class = models.CharField(max_length=100)
-    category = models.CharField(max_length=100)
-    capacity = models.IntegerField()
+    event_name = models.CharField(max_length=200, blank=True, null=True)
+    event_date = models.DateField(blank=True, null=True)
+    start_time = models.TimeField(blank=True, null=True)
+    level_class = models.CharField(max_length=100, blank=True, null=True)
+    category = models.CharField(max_length=100, blank=True, null=True)
+    capacity = models.IntegerField(blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 

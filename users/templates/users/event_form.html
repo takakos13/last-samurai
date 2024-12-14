@@ -10,7 +10,7 @@
         {% csrf_token %}
         <div class="mb-3">
             <label for="id_facility" class="form-label">コート</label>
-            <select name="facility" id="id_facility" class="form-select" required>
+            <select name="facility" id="id_facility" class="form-select">
                 {% for facility in form.fields.facility.queryset %}
                     <option value="{{ facility.id }}" {% if form.instance.facility.id == facility.id %}selected{% endif %}>
                         {{ facility.court_name }} - {{ facility.location }}
@@ -21,21 +21,21 @@
         <div class="mb-3">
             <label for="id_event_name" class="form-label">イベント名</label>
             <input type="text" name="event_name" id="id_event_name" class="form-control" 
-                   value="{{ form.instance.event_name }}" required>
+                   value="{{ form.instance.event_name }}">
         </div>
         <div class="mb-3">
             <label for="id_event_date" class="form-label">開催日</label>
             <input type="date" name="event_date" id="id_event_date" class="form-control" 
-                   value="{{ form.instance.event_date|date:'Y-m-d' }}" required>
+                   value="{{ form.instance.event_date|date:'Y-m-d' }}">
         </div>
         <div class="mb-3">
             <label for="id_start_time" class="form-label">開始時間</label>
             <input type="time" name="start_time" id="id_start_time" class="form-control" 
-                   value="{{ form.instance.start_time|time:'H:i' }}" required>
+                   value="{{ form.instance.start_time|time:'H:i' }}">
         </div>
         <div class="mb-3">
             <label for="id_level_class" class="form-label">レベル</label>
-            <select name="level_class" id="id_level_class" class="form-select" required>
+            <select name="level_class" id="id_level_class" class="form-select">
                 {% for value, label in form.fields.level_class.choices %}
                     <option value="{{ value }}" {% if form.instance.level_class == value %}selected{% endif %}>
                         {{ label }}
@@ -45,7 +45,7 @@
         </div>
         <div class="mb-3">
             <label for="id_category" class="form-label">カテゴリ</label>
-            <select name="category" id="id_category" class="form-select" required>
+            <select name="category" id="id_category" class="form-select">
                 {% for value, label in form.fields.category.choices %}
                     <option value="{{ value }}" {% if form.instance.category == value %}selected{% endif %}>
                         {{ label }}
@@ -56,7 +56,7 @@
         <div class="mb-3">
             <label for="id_capacity" class="form-label">募集人数</label>
             <input type="number" name="capacity" id="id_capacity" class="form-control" 
-                   value="{{ form.instance.capacity }}" required>
+                   value="{{ form.instance.capacity }}">
         </div>
         {% bootstrap_button button_type="submit" content="保存" %}
         <a href="{% url 'users:index' %}" class="btn btn-secondary">戻る</a>
