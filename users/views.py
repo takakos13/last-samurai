@@ -413,3 +413,18 @@ def search_results(request):
 def top(request):
     """トップページを表示するビュー"""
     return render(request, 'users/top.html')
+
+def login(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        
+        try:
+            user = User.objects.get(email=email, password=password)
+            return redirect('users:mypage', user_id=user.id)
+        except User.DoesNotExist:
+            return render(request, 'users/login.html', {
+                'error_message': 'メールアドレスまたはパスワードが正しくありません。'
+            })
+    
+    return render(request, 'users/login.html')

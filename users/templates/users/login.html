@@ -1,0 +1,36 @@
+{% extends "users/base.html" %}
+{% load django_bootstrap5 %}
+
+{% block title %}ログイン{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title text-center mb-4">ログイン</h2>
+                    {% if error_message %}
+                        <div class="alert alert-danger">{{ error_message }}</div>
+                    {% endif %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="email" class="form-label">メールアドレス</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">パスワード</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">ログイン</button>
+                            <a href="{% url 'users:top' %}" class="btn btn-secondary">戻る</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
