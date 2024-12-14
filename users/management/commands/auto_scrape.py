@@ -1,3 +1,4 @@
+import argparse
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from users.utils.scraper import LaBolaScraper
@@ -13,27 +14,35 @@ class Command(BaseCommand):
             action='store_true',
             help='翌日ではなく当日の日付でスクレイピングを実行',
         )
+        parser.add_argument('--date', help='検索日 (YYYY-MM-DD形式)')
+        parser.add_argument('--time', help='検索終了時刻 (HH:MM形式)')
+        parser.add_argument('--place', help='検索場所')
 
     def handle(self, *args, **options):
         try:
-            # --today オプションが指定された場合は当日の日付を使用
-            if options['today']:
-                target_date = timezone.now().strftime('%Y-%m-%d')
+            if options['date'] and options['time'] and options['place']:
+                target_datetime = datetime.strptime(f"{options['date']} {options['time']}", "%Y-%m-%d %H:%M")
+                scraping_conditions = {
+                    'location': options['place'],
+                    'date': options['date'],
+                    'start_time': options['time']
+                }
             else:
-                target_date = (timezone.now() + timedelta(days=1)).strftime('%Y-%m-%d')
-            
-            # スクレイピング条件を設定
-            scraping_conditions = {
-                'location': '東京',
-                'date': target_date,
-                'start_time': '12:00'
-            }
+                if options['today']:
+                    target_date = timezone.now().strftime('%Y-%m-%d')
+                else:
+                    target_date = (timezone.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+                
+                scraping_conditions = {
+                    'location': '東京',
+                    'date': target_date,
+                    'start_time': '12:00'
+                }
             
             self.stdout.write(
                 self.style.SUCCESS(f'スクレイピング開始: {scraping_conditions}')
             )
 
-            # スクレイピングの実行
             scraper = LaBolaScraper()
             scraped_events = scraper.search_events(
                 date=scraping_conditions['date'],
@@ -41,14 +50,11 @@ class Command(BaseCommand):
                 start_time=scraping_conditions['start_time']
             )
 
-            # スクレイピング結果の処理
             if scraped_events:
                 for event_data in scraped_events:
                     try:
-                        # nameフィールドをevent_nameとして使用
                         event_data['event_name'] = event_data.get('name', '')
                         
-                        # データの存在確認
                         required_fields = ['event_name', 'date', 'time', 'location', 'organizer', 'url']
                         missing_fields = [field for field in required_fields if not event_data.get(field)]
                         
@@ -58,7 +64,6 @@ class Command(BaseCommand):
                             )
                             continue
 
-                        # ScrapedEventモデルのインスタンスを作成
                         scraped_event = ScrapedEvent(
                             event_name=event_data['event_name'],
                             event_date=datetime.strptime(event_data['date'], '%Y/%m/%d').date(),
@@ -73,10 +78,8 @@ class Command(BaseCommand):
                             spots_left=event_data['capacity']['remaining']
                         )
                         
-                        # ScrapedEventを保存
                         scraped_event.save()
                         
-                        # FacilityとEventモデルに変換
                         scraped_event.convert_to_facility_and_event()
                         
                         self.stdout.write(
