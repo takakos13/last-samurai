@@ -2,58 +2,141 @@
 {% load django_bootstrap5 %}
 {% load static %}
 
-{% block title %}フットサルコート予約システム - トップ{% endblock %}
+{% block title %}Futsal Finder{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="jumbotron text-center my-5">
-        <h1 class="display-4">フットサルコート予約システム</h1>
-        <p class="lead">簡単に個人参加型フットサルの予約ができます</p>
-        <hr class="my-4">
-        <div class="row justify-content-center">
-            <div class="col-md-4">
-                <div class="card mb-4">
-                    <div class="card-body text-center">
-                        <h3 class="card-title">メンバー登録</h3>
-                        <p class="card-text">新規メンバー登録はこちら</p>
-                        <a href="{% url 'users:user_register' %}" class="btn btn-primary">登録する</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card mb-4">
-                    <div class="card-body text-center">
-                        <h3 class="card-title">イベント検索</h3>
-                        <p class="card-text">個サルイベントを検索</p>
-                        <a href="{% url 'users:index' %}" class="btn btn-success">検索する</a>
-                    </div>
+<nav class="navbar navbar-expand-lg navbar-light bg-white">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'users:top' %}">Futsal Finder</a>
+        <div class="d-flex">
+            <a href="{% url 'users:favorite_facility_new' user.id %}" class="nav-link me-3">
+                <i class="fas fa-star"></i> お気に入り施設
+            </a>
+            <a href="{% url 'users:user_register' %}" class="nav-link me-3">
+                <i class="fas fa-user-plus"></i> 新規会員登録
+            </a>
+            <a href="{% url 'users:login' %}" class="nav-link">
+                <i class="fas fa-sign-in-alt"></i> ログイン
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- 左サイドバー -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">検索</h5>
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">開催日</label>
+                            <input type="date" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">開催場所</label>
+                            <input type="text" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">レベル</label>
+                            <select class="form-select">
+                                <option>初級</option>
+                                <option>中級</option>
+                                <option>上級</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">クラス</label>
+                            <select class="form-select">
+                                <option>個人</option>
+                                <option>チーム</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">キーワード</label>
+                            <input type="text" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">検索</button>
+                    </form>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="features mt-5">
-        <h2 class="text-center mb-4">主な機能</h2>
-        <div class="row">
-            <div class="col-md-4">
-                <div class="feature-box text-center">
-                    <i class="fas fa-search fa-3x mb-3"></i>
-                    <h3>簡単検索</h3>
-                    <p>日付、場所、時間から最適な個サルを検索できます</p>
+        <!-- メインコンテンツ -->
+        <div class="col-md-9">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">周辺オススメの個サル</h5>
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="view" id="visitor" checked>
+                            <label class="btn btn-outline-primary" for="visitor">ビジター</label>
+                            <input type="radio" class="btn-check" name="view" id="all">
+                            <label class="btn btn-outline-primary" for="all">全施設</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="list-group">
+                                <a href="#" class="list-group-item list-group-item-action">1 ABCフットサルパーク</a>
+                                <a href="#" class="list-group-item list-group-item-action">2 adidas Futsal</a>
+                                <a href="#" class="list-group-item list-group-item-action">3 江東区スポーツ体育館</a>
+                                <a href="#" class="list-group-item list-group-item-action">4 Pumaサッカー&Futsal</a>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div style="height: 400px;">
+                                <iframe 
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12961.528131647427!2d139.75214303025123!3d35.68151241947011!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188bfbd89f700b%3A0x277c49ba34ed38!2z5p2x5Lqs6aeF!5e0!3m2!1sja!2sjp!4v1709754431346!5m2!1sja!2sjp"
+                                    width="100%" 
+                                    height="100%" 
+                                    style="border:0;" 
+                                    allowfullscreen="" 
+                                    loading="lazy"
+                                    referrerpolicy="no-referrer-when-downgrade">
+                                </iframe>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="feature-box text-center">
-                    <i class="fas fa-calendar-alt fa-3x mb-3"></i>
-                    <h3>予約管理</h3>
-                    <p>予約したイベントをカレンダーで管理できます</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="feature-box text-center">
-                    <i class="fas fa-heart fa-3x mb-3"></i>
-                    <h3>お気に入り</h3>
-                    <p>よく利用する施設をお気に入り登録できます</p>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">お気に入り新着</h5>
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">芝浦フットサル</h6>
+                                    <p class="card-text mb-1">2024/12/3(日)</p>
+                                    <p class="card-text mb-1">20:00</p>
+                                    <p class="card-text text-primary">空き3人</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">品川フットサルアリーナ</h6>
+                                    <p class="card-text mb-1">2024/12/4(月)</p>
+                                    <p class="card-text mb-1">19:30</p>
+                                    <p class="card-text text-primary">空き2人</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">東京ベイフットサル</h6>
+                                    <p class="card-text mb-1">2024/12/5(火)</p>
+                                    <p class="card-text mb-1">21:00</p>
+                                    <p class="card-text text-primary">空き4人</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
