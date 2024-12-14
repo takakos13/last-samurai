@@ -409,3 +409,7 @@ def search_results(request):
         'events': events,
         'search_params': search_params
     })
+
+def top(request):
+    """トップページを表示するビュー"""
+    return render(request, 'users/top.html')

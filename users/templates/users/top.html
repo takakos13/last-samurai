@@ -1,0 +1,62 @@
+{% extends "users/base.html" %}
+{% load django_bootstrap5 %}
+{% load static %}
+
+{% block title %}フットサルコート予約システム - トップ{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="jumbotron text-center my-5">
+        <h1 class="display-4">フットサルコート予約システム</h1>
+        <p class="lead">簡単に個人参加型フットサルの予約ができます</p>
+        <hr class="my-4">
+        <div class="row justify-content-center">
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body text-center">
+                        <h3 class="card-title">メンバー登録</h3>
+                        <p class="card-text">新規メンバー登録はこちら</p>
+                        <a href="{% url 'users:user_register' %}" class="btn btn-primary">登録する</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body text-center">
+                        <h3 class="card-title">イベント検索</h3>
+                        <p class="card-text">個サルイベントを検索</p>
+                        <a href="{% url 'users:index' %}" class="btn btn-success">検索する</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="features mt-5">
+        <h2 class="text-center mb-4">主な機能</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="feature-box text-center">
+                    <i class="fas fa-search fa-3x mb-3"></i>
+                    <h3>簡単検索</h3>
+                    <p>日付、場所、時間から最適な個サルを検索できます</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-box text-center">
+                    <i class="fas fa-calendar-alt fa-3x mb-3"></i>
+                    <h3>予約管理</h3>
+                    <p>予約したイベントをカレンダーで管理できます</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-box text-center">
+                    <i class="fas fa-heart fa-3x mb-3"></i>
+                    <h3>お気に入り</h3>
+                    <p>よく利用する施設をお気に入り登録できます</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
